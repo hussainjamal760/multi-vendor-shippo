@@ -7,45 +7,52 @@ const Categories = () => {
   const navigate = useNavigate();
   return (
     <>
+      {/* Branding Section */}
       <div className={`${styles.section} hidden sm:block`}>
         <div
-          className={`branding my-12 flex justify-between w-full shadow-sm bg-white p-5 rounded-md`}
+          className="branding my-12 flex justify-between w-full bg-gradient-to-r from-blue-600 to-blue-500 p-6 rounded-xl shadow-lg text-white"
         >
           {brandingData &&
             brandingData.map((i, index) => (
-              <div className="flex items-start" key={index}>
-                {i.icon}
-                <div className="px-3">
-                  <h3 className="font-bold text-sm md:text-base">{i.title}</h3>
-                  <p className="text-xs md:text-sm">{i.Description}</p>
+              <div className="flex items-start space-x-3" key={index}>
+                <div className="text-white text-2xl">{i.icon}</div>
+                <div>
+                  <h3 className="font-semibold text-base md:text-lg">{i.title}</h3>
+                  <p className="text-xs md:text-sm opacity-90">{i.Description}</p>
                 </div>
               </div>
             ))}
         </div>
       </div>
 
+      {/* Categories Grid */}
       <div
-        className={`${styles.section} bg-white p-6 rounded-lg mb-12`}
+        className={`${styles.section} bg-white p-6 rounded-xl mb-12 shadow-md`}
         id="categories"
       >
-        <div className="grid grid-cols-1 gap-[5px] md:grid-cols-2 md:gap-[10px] lg:grid-cols-4 lg:gap-[20px] xl:grid-cols-5 xl:gap-[30px]">
+        <h2 className="text-2xl font-bold text-blue-700 mb-6 text-center">
+          Shop by Categories
+        </h2>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
           {categoriesData &&
             categoriesData.map((i) => {
-              const handleSubmit = (i) => {
+              const handleSubmit = () => {
                 navigate(`/products?category=${i.title}`);
               };
               return (
                 <div
-                  className="w-full h-[100px] flex items-center justify-between cursor-pointer overflow-hidden"
                   key={i.id}
-                  onClick={() => handleSubmit(i)}
+                  onClick={handleSubmit}
+                  className="w-full h-[140px] flex flex-col items-center justify-center cursor-pointer bg-white rounded-lg shadow hover:shadow-lg transition border border-gray-100 hover:border-blue-500 group"
                 >
-                  <h5 className={`text-[18px] leading-[1.3]`}>{i.title}</h5>
                   <img
                     src={i.image_Url}
-                    className="w-[120px] object-cover"
-                    alt=""
+                    className="w-[90px] h-[70px] object-contain mb-3 group-hover:scale-105 transition"
+                    alt={i.title}
                   />
+                  <h5 className="text-base font-medium text-gray-800 group-hover:text-blue-600">
+                    {i.title}
+                  </h5>
                 </div>
               );
             })}
