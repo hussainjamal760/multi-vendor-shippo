@@ -9,6 +9,7 @@ const cloudinary = require("cloudinary");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const ErrorHandler = require("../utils/ErrorHandler");
 const sendShopToken = require("../utils/shopToken");
+const sendToken = require("../utils/jwtToken");
 
 // create shop
 // ⚠️ DEVELOPMENT ONLY - Skip email verification for shop creation
@@ -56,7 +57,12 @@ router.post("/create-shop", catchAsyncErrors(async (req, res, next) => {
   }
 }));
 
-
+// create activation token
+const createActivationToken = (seller) => {
+  return jwt.sign(seller, process.env.ACTIVATION_SECRET, {
+    expiresIn: "24h",
+  });
+};
 
 // activate shop - WITH DEBUG LOGGING
 router.post(
