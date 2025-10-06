@@ -24,6 +24,10 @@ if (process.env.NODE_ENV !== "PRODUCTION") {
     path: "config/.env",
   });
 }
+console.log("✅ SMTP ENV CHECK");
+console.log("HOST:", process.env.SMPT_HOST);
+console.log("PORT:", process.env.SMPT_PORT);
+console.log("MAIL:", process.env.SMPT_MAIL);
 
 // import routes
 const user = require("./controller/user");
