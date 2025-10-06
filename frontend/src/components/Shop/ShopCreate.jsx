@@ -17,62 +17,42 @@ const ShopCreate = () => {
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
 const navigate = useNavigate()
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    axios
-      .post(`${server}/shop/create-shop`, {
-        name,
-        email,
-        password,
-        avatar,
-        zipCode,
-        address,
-        phoneNumber,
-      })
-      .then((res) => {
-        toast.success(res.data.message);
-        setName("");
-        setEmail("");
-        setPassword("");
-        setAvatar();
-        setZipCode();
-        setAddress("");
-        setPhoneNumber();
-      })
-      .catch((error) => {
-  const msg =
-    error.response?.data?.message ||
-    error.message ||
-    "Something went wrong!";
-  toast.error(msg);
-});
-
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
   axios
-  .post(`${server}/shop/create-shop`, {
-        name,
-        email,
-        password,
-        avatar,
-        zipCode,
-        address,
-        phoneNumber,
-      })
-  .then((res) => {
-    toast.success("Shop created successfully! Please login to your shop account.");
-    setTimeout(() => {
-      navigate("/shop-login");
-    }, 1500);
-  })
-  .catch((error) => {
-    const msg =
-      error.response?.data?.message ||
-      error.message ||
-      "Something went wrong!";
-    toast.error(msg);
-  });
+    .post(`${server}/shop/create-shop`, {
+      name,
+      email,
+      password,
+      avatar,
+      zipCode,
+      address,
+      phoneNumber,
+    })
+    .then((res) => {
+      toast.success("Shop created successfully! Please login to your shop account.");
+      setTimeout(() => {
+        navigate("/shop-login");
+      }, 1500);
+
+      setName("");
+      setEmail("");
+      setPassword("");
+      setAvatar();
+      setZipCode();
+      setAddress("");
+      setPhoneNumber();
+    })
+    .catch((error) => {
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong!";
+      toast.error(msg);
+    });
+};
+
 
 
   const handleFileInputChange = (e) => {

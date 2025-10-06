@@ -28,38 +28,31 @@ const Singup = () => {
     reader.readAsDataURL(e.target.files[0]);
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
 
     axios
       .post(`${server}/user/create-user`, { name, email, password, avatar })
-      .then((res) => {
-        toast.success(res.data.message);
+      .then(() => {
+        toast.success("Signup successful! Please login to your account.");
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
+
+        // clear inputs
         setName("");
         setEmail("");
         setPassword("");
-        setAvatar();
+        setAvatar(null);
       })
       .catch((error) => {
-        toast.error(error.response.data.message);
+        const msg =
+          error.response?.data?.message ||
+          error.message ||
+          "Something went wrong!";
+        toast.error(msg);
       });
   };
-
-  axios
-  .post(`${server}/user/create-user`, { name, email, password, avatar })
-  .then((res) => {
-    toast.success("Signup successful! Please login to your account.");
-    setTimeout(() => {
-      navigate("/login");
-    }, 1500);
-  })
-  .catch((error) => {
-    const msg =
-      error.response?.data?.message ||
-      error.message ||
-      "Something went wrong!";
-    toast.error(msg);
-  });
 
 
   return (
