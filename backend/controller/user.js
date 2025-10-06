@@ -11,127 +11,127 @@ const { isAuthenticated, isAdmin } = require("../middleware/auth");
 
 // ✅ FIXED: Added catchAsyncErrors wrapper
 
-router.post(
-  "/create-user",
-  catchAsyncErrors(async (req, res, next) => {
-    try {
-      const { name, email, password, avatar } = req.body;
+// router.post(
+//   "/create-user",
+//   catchAsyncErrors(async (req, res, next) => {
+//     try {
+//       const { name, email, password, avatar } = req.body;
 
-      console.log("=== CREATE USER REQUEST ===");
-      console.log("Email:", email);
+//       console.log("=== CREATE USER REQUEST ===");
+//       console.log("Email:", email);
 
-      const userEmail = await User.findOne({ email });
-      if (userEmail) {
-        return next(new ErrorHandler("User already exists", 400));
-      }
+//       const userEmail = await User.findOne({ email });
+//       if (userEmail) {
+//         return next(new ErrorHandler("User already exists", 400));
+//       }
 
-      console.log("Uploading avatar to cloudinary...");
-      const myCloud = await cloudinary.v2.uploader.upload(avatar, {
-        folder: "avatars",
-      });
-      console.log("Avatar uploaded successfully:", myCloud.secure_url);
+//       console.log("Uploading avatar to cloudinary...");
+//       const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+//         folder: "avatars",
+//       });
+//       console.log("Avatar uploaded successfully:", myCloud.secure_url);
 
-      const user = {
-        name: name,
-        email: email,
-        password: password,
-        avatar: {
-          public_id: myCloud.public_id,
-          url: myCloud.secure_url,
-        },
-      };
+//       const user = {
+//         name: name,
+//         email: email,
+//         password: password,
+//         avatar: {
+//           public_id: myCloud.public_id,
+//           url: myCloud.secure_url,
+//         },
+//       };
 
-      const activationToken = createActivationToken(user);
+//       const activationToken = createActivationToken(user);
 
-      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-      const activationUrl = `${frontendUrl}/activation/${activationToken}`;
+//       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+//       const activationUrl = `${frontendUrl}/activation/${activationToken}`;
 
-      console.log("Sending activation email to:", user.email);
+//       console.log("Sending activation email to:", user.email);
 
-      try {
-        await sendMail({
-          email: user.email,
-          subject: "Activate your account",
-          message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
-          html: `<p>Hello ${user.name},</p>
-                 <p>Please click the link below to activate your account:</p>
-                 <p><a href="${activationUrl}">${activationUrl}</a></p>
-                 <p>If you did not request this, ignore this email.</p>`,
-        });
+//       try {
+//         await sendMail({
+//           email: user.email,
+//           subject: "Activate your account",
+//           message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
+//           html: `<p>Hello ${user.name},</p>
+//                  <p>Please click the link below to activate your account:</p>
+//                  <p><a href="${activationUrl}">${activationUrl}</a></p>
+//                  <p>If you did not request this, ignore this email.</p>`,
+//         });
 
-        console.log("Email sent successfully");
+//         console.log("Email sent successfully");
 
-        // Respond without saving user yet (if your flow requires activation first)
-        res.status(201).json({
-          success: true,
-          message: `please check your email:- ${user.email} to activate your account!`,
-        });
-      } catch (error) {
-        console.error("Email sending error:", error);
+//         // Respond without saving user yet (if your flow requires activation first)
+//         res.status(201).json({
+//           success: true,
+//           message: `please check your email:- ${user.email} to activate your account!`,
+//         });
+//       } catch (error) {
+//         console.error("Email sending error:", error);
 
-        // cleanup: delete uploaded avatar to avoid orphan images
-        try {
-          if (myCloud && myCloud.public_id) {
-            await cloudinary.v2.uploader.destroy(myCloud.public_id);
-            console.log("Deleted uploaded avatar due to email failure:", myCloud.public_id);
-          }
-        } catch (delErr) {
-          console.warn("Failed to delete avatar after email error:", delErr.message || delErr);
-        }
+//         // cleanup: delete uploaded avatar to avoid orphan images
+//         try {
+//           if (myCloud && myCloud.public_id) {
+//             await cloudinary.v2.uploader.destroy(myCloud.public_id);
+//             console.log("Deleted uploaded avatar due to email failure:", myCloud.public_id);
+//           }
+//         } catch (delErr) {
+//           console.warn("Failed to delete avatar after email error:", delErr.message || delErr);
+//         }
 
-        return next(new ErrorHandler(error.message || "Email sending failed", 500));
-      }
-    } catch (error) {
-      console.error("Create user error:", error);
-      return next(new ErrorHandler(error.message || "Something went wrong", 400));
-    }
-  })
-);
+//         return next(new ErrorHandler(error.message || "Email sending failed", 500));
+//       }
+//     } catch (error) {
+//       console.error("Create user error:", error);
+//       return next(new ErrorHandler(error.message || "Something went wrong", 400));
+//     }
+//   })
+// );
 
 
 // ⚠️ DEVELOPMENT ONLY - Remove email verification temporarily
 
 // Replace the /create-user route with this:
-// router.post("/create-user", catchAsyncErrors(async (req, res, next) => {
-//   try {
-//     const { name, email, password, avatar } = req.body;
+router.post("/create-user", catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { name, email, password, avatar } = req.body;
     
-//     console.log("=== CREATE USER REQUEST ===");
-//     console.log("Email:", email);
+    console.log("=== CREATE USER REQUEST ===");
+    console.log("Email:", email);
     
-//     const userEmail = await User.findOne({ email });
+    const userEmail = await User.findOne({ email });
 
-//     if (userEmail) {
-//       return next(new ErrorHandler("User already exists", 400));
-//     }
+    if (userEmail) {
+      return next(new ErrorHandler("User already exists", 400));
+    }
 
-//     console.log("Uploading avatar to cloudinary...");
-//     const myCloud = await cloudinary.v2.uploader.upload(avatar, {
-//       folder: "avatars",
-//     });
-//     console.log("Avatar uploaded successfully");
+    console.log("Uploading avatar to cloudinary...");
+    const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+      folder: "avatars",
+    });
+    console.log("Avatar uploaded successfully");
 
-//     // ⚠️ SKIP EMAIL - Create user directly
-//     const user = await User.create({
-//       name,
-//       email,
-//       avatar: {
-//         public_id: myCloud.public_id,
-//         url: myCloud.secure_url,
-//       },
-//       password,
-//     });
+    // ⚠️ SKIP EMAIL - Create user directly
+    const user = await User.create({
+      name,
+      email,
+      avatar: {
+        public_id: myCloud.public_id,
+        url: myCloud.secure_url,
+      },
+      password,
+    });
 
-//     console.log("User created directly without email verification");
+    console.log("User created directly without email verification");
 
-//     // Send JWT token
-//     sendToken(user, 201, res);
+    // Send JWT token
+    sendToken(user, 201, res);
     
-//   } catch (error) {
-//     console.error("Create user error:", error);
-//     return next(new ErrorHandler(error.message, 400));
-//   }
-// }));
+  } catch (error) {
+    console.error("Create user error:", error);
+    return next(new ErrorHandler(error.message, 400));
+  }
+}));
 
 // ✅ FIXED: Increased token expiration from 5m to 24h
 const createActivationToken = (user) => {
