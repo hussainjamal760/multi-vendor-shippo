@@ -10,6 +10,9 @@ const sendToken = require("../utils/jwtToken");
 const { isAuthenticated, isAdmin } = require("../middleware/auth");
 
 // ✅ FIXED: Added catchAsyncErrors wrapper
+// ⚠️ DEVELOPMENT ONLY - Remove email verification temporarily
+
+// Replace the /create-user route with this:
 router.post("/create-user", catchAsyncErrors(async (req, res, next) => {
   try {
     const { name, email, password, avatar } = req.body;
@@ -29,41 +32,22 @@ router.post("/create-user", catchAsyncErrors(async (req, res, next) => {
     });
     console.log("Avatar uploaded successfully");
 
-    const user = {
-      name: name,
-      email: email,
-      password: password,
+    // ⚠️ SKIP EMAIL - Create user directly
+    const user = await User.create({
+      name,
+      email,
       avatar: {
         public_id: myCloud.public_id,
         url: myCloud.secure_url,
       },
-    };
+      password,
+    });
 
-    const activationToken = createActivationToken(user);
+    console.log("User created directly without email verification");
 
-    // ✅ FIXED: Use environment variable for frontend URL
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-    const activationUrl = `${frontendUrl}/activation/${activationToken}`;
-
-    console.log("Sending activation email...");
+    // Send JWT token
+    sendToken(user, 201, res);
     
-    try {
-      await sendMail({
-        email: user.email,
-        subject: "Activate your account",
-        message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
-      });
-      
-      console.log("Email sent successfully");
-      
-      res.status(201).json({
-        success: true,
-        message: `please check your email:- ${user.email} to activate your account!`,
-      });
-    } catch (error) {
-      console.error("Email sending error:", error);
-      return next(new ErrorHandler(error.message, 500));
-    }
   } catch (error) {
     console.error("Create user error:", error);
     return next(new ErrorHandler(error.message, 400));
