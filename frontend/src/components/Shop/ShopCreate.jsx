@@ -50,6 +50,23 @@ const ShopCreate = () => {
 
   };
 
+  axios
+  .post(`${server}/shop/create-shop`, shopForm)
+  .then((res) => {
+    toast.success("Shop created successfully! Please login to your shop account.");
+    setTimeout(() => {
+      navigate("/shop-login");
+    }, 1500);
+  })
+  .catch((error) => {
+    const msg =
+      error.response?.data?.message ||
+      error.message ||
+      "Something went wrong!";
+    toast.error(msg);
+  });
+
+
   const handleFileInputChange = (e) => {
     const reader = new FileReader();
 

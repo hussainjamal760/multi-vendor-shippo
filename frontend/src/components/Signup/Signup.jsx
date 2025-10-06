@@ -43,6 +43,23 @@ const Singup = () => {
       });
   };
 
+  axios
+  .post(`${server}/user/create-user`, newForm)
+  .then((res) => {
+    toast.success("Signup successful! Please login to your account.");
+    setTimeout(() => {
+      navigate("/login");
+    }, 1500);
+  })
+  .catch((error) => {
+    const msg =
+      error.response?.data?.message ||
+      error.message ||
+      "Something went wrong!";
+    toast.error(msg);
+  });
+
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
