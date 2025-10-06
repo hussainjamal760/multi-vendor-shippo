@@ -9,7 +9,7 @@ import styles from "../../styles/styles";
 import { TfiGallery } from "react-icons/tfi";
 import socketIO from "socket.io-client";
 import { format } from "timeago.js";
-const ENDPOINT = "http://localhost:4000/";
+const ENDPOINT = "wss://multi-vendor-shippo-backend.onrender.com";
 const socketId = socketIO(ENDPOINT, { transports: ["websocket"] });
 
 const DashboardMessages = () => {
@@ -312,12 +312,13 @@ const MessageList = ({
       </div>
       <div className="pl-3">
         <h1 className="text-[18px]">{user?.name}</h1>
-        <p className="text-[16px] text-[#000c]">
-          {!isLoading && data?.lastMessageId !== user?._id
-            ? "You:"
-            : user?.name.split(" ")[0] + ": "}{" "}
-          {data?.lastMessage}
-        </p>
+       <p className="text-[16px] text-[#000c]">
+  {!isLoading && data?.lastMessageId !== user?._id
+    ? "You:"
+    : (user?.name ? user.name.split(" ")[0] : "Unknown") + ": "}{" "}
+  {data?.lastMessage}
+</p>
+
       </div>
     </div>
   );
