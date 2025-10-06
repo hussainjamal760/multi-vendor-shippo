@@ -16,7 +16,7 @@ const ShopCreate = () => {
   const [avatar, setAvatar] = useState();
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
-
+const navigate = useNavigate()
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -51,7 +51,15 @@ const ShopCreate = () => {
   };
 
   axios
-  .post(`${server}/shop/create-shop`, shopForm)
+  .post(`${server}/shop/create-shop`, {
+        name,
+        email,
+        password,
+        avatar,
+        zipCode,
+        address,
+        phoneNumber,
+      })
   .then((res) => {
     toast.success("Shop created successfully! Please login to your shop account.");
     setTimeout(() => {
