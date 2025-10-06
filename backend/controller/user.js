@@ -9,19 +9,25 @@ const sendMail = require("../utils/sendMail");
 const sendToken = require("../utils/jwtToken");
 const { isAuthenticated, isAdmin } = require("../middleware/auth");
 
-// create user
-router.post("/create-user", async (req, res, next) => {
+// ✅ FIXED: Added catchAsyncErrors wrapper
+router.post("/create-user", catchAsyncErrors(async (req, res, next) => {
   try {
     const { name, email, password, avatar } = req.body;
+    
+    console.log("=== CREATE USER REQUEST ===");
+    console.log("Email:", email);
+    
     const userEmail = await User.findOne({ email });
 
     if (userEmail) {
       return next(new ErrorHandler("User already exists", 400));
     }
 
+    console.log("Uploading avatar to cloudinary...");
     const myCloud = await cloudinary.v2.uploader.upload(avatar, {
       folder: "avatars",
     });
+    console.log("Avatar uploaded successfully");
 
     const user = {
       name: name,
@@ -35,30 +41,39 @@ router.post("/create-user", async (req, res, next) => {
 
     const activationToken = createActivationToken(user);
 
-    const activationUrl = `http://localhost:3000/activation/${activationToken}`;
+    // ✅ FIXED: Use environment variable for frontend URL
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const activationUrl = `${frontendUrl}/activation/${activationToken}`;
 
+    console.log("Sending activation email...");
+    
     try {
       await sendMail({
         email: user.email,
         subject: "Activate your account",
         message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
       });
+      
+      console.log("Email sent successfully");
+      
       res.status(201).json({
         success: true,
         message: `please check your email:- ${user.email} to activate your account!`,
       });
     } catch (error) {
+      console.error("Email sending error:", error);
       return next(new ErrorHandler(error.message, 500));
     }
   } catch (error) {
+    console.error("Create user error:", error);
     return next(new ErrorHandler(error.message, 400));
   }
-});
+}));
 
-// create activation token
+// ✅ FIXED: Increased token expiration from 5m to 24h
 const createActivationToken = (user) => {
   return jwt.sign(user, process.env.ACTIVATION_SECRET, {
-    expiresIn: "5m",
+    expiresIn: "24h", // Changed from "5m"
   });
 };
 
@@ -67,7 +82,12 @@ router.post(
   "/activation",
   catchAsyncErrors(async (req, res, next) => {
     try {
+      console.log("=== ACTIVATION ROUTE HIT ===");
       const { activation_token } = req.body;
+
+      if (!activation_token) {
+        return next(new ErrorHandler("No activation token provided", 400));
+      }
 
       const newUser = jwt.verify(
         activation_token,
@@ -77,6 +97,7 @@ router.post(
       if (!newUser) {
         return next(new ErrorHandler("Invalid token", 400));
       }
+      
       const { name, email, password, avatar } = newUser;
 
       let user = await User.findOne({ email });
@@ -84,6 +105,7 @@ router.post(
       if (user) {
         return next(new ErrorHandler("User already exists", 400));
       }
+      
       user = await User.create({
         name,
         email,
@@ -93,6 +115,7 @@ router.post(
 
       sendToken(user, 201, res);
     } catch (error) {
+      console.error("Activation error:", error);
       return next(new ErrorHandler(error.message, 500));
     }
   })
@@ -270,7 +293,6 @@ router.put(
       if (existsAddress) {
         Object.assign(existsAddress, req.body);
       } else {
-        // add the new address to the array
         user.addresses.push(req.body);
       }
 
@@ -346,7 +368,7 @@ router.put(
   })
 );
 
-// find user infoormation with the userId
+// find user information with the userId
 router.get(
   "/user-info/:id",
   catchAsyncErrors(async (req, res, next) => {
