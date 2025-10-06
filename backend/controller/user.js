@@ -10,9 +10,6 @@ const sendToken = require("../utils/jwtToken");
 const { isAuthenticated, isAdmin } = require("../middleware/auth");
 
 // ✅ FIXED: Added catchAsyncErrors wrapper
-// ⚠️ DEVELOPMENT ONLY - Remove email verification temporarily
-
-// Replace the /create-user route with this:
 router.post("/create-user", catchAsyncErrors(async (req, res, next) => {
   try {
     const { name, email, password, avatar } = req.body;
@@ -32,27 +29,90 @@ router.post("/create-user", catchAsyncErrors(async (req, res, next) => {
     });
     console.log("Avatar uploaded successfully");
 
-    // ⚠️ SKIP EMAIL - Create user directly
-    const user = await User.create({
-      name,
-      email,
+    const user = {
+      name: name,
+      email: email,
+      password: password,
       avatar: {
         public_id: myCloud.public_id,
         url: myCloud.secure_url,
       },
-      password,
-    });
+    };
 
-    console.log("User created directly without email verification");
+    const activationToken = createActivationToken(user);
 
-    // Send JWT token
-    sendToken(user, 201, res);
+    // ✅ FIXED: Use environment variable for frontend URL
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const activationUrl = `${frontendUrl}/activation/${activationToken}`;
+
+    console.log("Sending activation email...");
     
+    try {
+      await sendMail({
+        email: user.email,
+        subject: "Activate your account",
+        message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
+      });
+      
+      console.log("Email sent successfully");
+      
+      res.status(201).json({
+        success: true,
+        message: `please check your email:- ${user.email} to activate your account!`,
+      });
+    } catch (error) {
+      console.error("Email sending error:", error);
+      return next(new ErrorHandler(error.message, 500));
+    }
   } catch (error) {
     console.error("Create user error:", error);
     return next(new ErrorHandler(error.message, 400));
   }
 }));
+
+// ⚠️ DEVELOPMENT ONLY - Remove email verification temporarily
+
+// Replace the /create-user route with this:
+// router.post("/create-user", catchAsyncErrors(async (req, res, next) => {
+//   try {
+//     const { name, email, password, avatar } = req.body;
+    
+//     console.log("=== CREATE USER REQUEST ===");
+//     console.log("Email:", email);
+    
+//     const userEmail = await User.findOne({ email });
+
+//     if (userEmail) {
+//       return next(new ErrorHandler("User already exists", 400));
+//     }
+
+//     console.log("Uploading avatar to cloudinary...");
+//     const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+//       folder: "avatars",
+//     });
+//     console.log("Avatar uploaded successfully");
+
+//     // ⚠️ SKIP EMAIL - Create user directly
+//     const user = await User.create({
+//       name,
+//       email,
+//       avatar: {
+//         public_id: myCloud.public_id,
+//         url: myCloud.secure_url,
+//       },
+//       password,
+//     });
+
+//     console.log("User created directly without email verification");
+
+//     // Send JWT token
+//     sendToken(user, 201, res);
+    
+//   } catch (error) {
+//     console.error("Create user error:", error);
+//     return next(new ErrorHandler(error.message, 400));
+//   }
+// }));
 
 // ✅ FIXED: Increased token expiration from 5m to 24h
 const createActivationToken = (user) => {
