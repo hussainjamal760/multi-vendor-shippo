@@ -4,6 +4,7 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require("path");
 
 app.use(cors({
   origin: ['https://multi-vendor-shippo-1.onrender.com', 'http://localhost:3000'],
@@ -52,7 +53,17 @@ app.use("/api/v2/coupon", coupon);
 app.use("/api/v2/payment", payment);
 app.use("/api/v2/withdraw", withdraw);
 
-// it's for ErrorHandling
+if (process.env.NODE_ENV === "PRODUCTION") {
+  const buildPath = path.join(__dirname, '..', 'frontend', 'build');
+  
+  app.use(express.static(buildPath)); 
+
+ 
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(buildPath, 'index.html'));
+  });
+}
+
 app.use(ErrorHandler);
 
 module.exports = app;

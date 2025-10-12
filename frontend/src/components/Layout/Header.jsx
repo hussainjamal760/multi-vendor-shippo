@@ -217,13 +217,15 @@ const Header = ({ activeHeading }) => {
             />
           </div>
           <div>
+          <div>
             <Link to="/">
               <img
                 src="main.png"
                 alt=""
-                className="mt-3 h-[139px] cursor-pointer"
+                className="h-10 w-auto cursor-pointer" 
               />
             </Link>
+          </div>
           </div>
           <div>
             <div
